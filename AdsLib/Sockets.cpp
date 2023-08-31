@@ -164,10 +164,12 @@ size_t Socket::read(uint8_t* buffer, size_t maxBytes, timeval* timeout) const
         return bytesRead;
     }
     const auto lastError = WSAGetLastError();
-    if ((0 == bytesRead) || (lastError == CONNECTION_CLOSED) || (lastError == CONNECTION_ABORTED)) {
-        throw std::runtime_error("connection closed by remote");
+    if ((0 == bytesRead) || (lastError == CONNECTION_CLOSED) || (lastError == CONNECTION_ABORTED) || (lastError == CONNECTION_RESET )) {
+        std::stringstream ss;
+        ss << "connection closed by remote: bytes read: " << bytesRead << " lastError: " << lastError << " " << std::strerror(lastError);
+        throw std::runtime_error(ss.str());
     } else {
-        LOG_ERROR("read frame failed with error: " << std::dec << std::strerror(lastError));
+        LOG_ERROR("read frame failed with error: " << lastError << " " << std::dec << std::strerror(lastError));
     }
     return 0;
 }
